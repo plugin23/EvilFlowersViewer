@@ -20,6 +20,13 @@ const Page = () => {
           'absolute w-full h-full top-0 left-0 leading-none text-transparent'
         )
 
+        const annotationContainer = document.createElement('div')
+        annotationContainer.setAttribute('id', 'annotationLayer')
+        annotationContainer.setAttribute(
+          'class',
+          'absolute w-full h-full top-0 left-0'
+        )
+
         const viewport = page.getViewport({ scale })
 
         page.getTextContent().then((textContent) => {
@@ -30,6 +37,19 @@ const Page = () => {
             textDivs: [],
           })
         })
+
+        page.getAnnotations().then((annotations) => {
+          pdfjs.AnnotationLayer.render({
+            annotations,
+            div: annotationContainer,
+            viewport,
+            page,
+            linkService: new pdfjs.PDFLinkService(),
+            downloadManager: new pdfjs.DownloadManager(),
+            renderForms: false,
+          })
+        })
+
 
         const canvas = document.createElement('canvas')
         canvas.height = viewport.height
