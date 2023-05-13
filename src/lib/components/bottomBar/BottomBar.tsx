@@ -1,63 +1,89 @@
-import { useState } from 'react'
-// import {
-//   FaAngleDown,
-//   FaAngleUp,
-//   FaAngleRight,
-//   FaAngleLeft,
-// } from 'react-icons/fa'
+import { ReactComponentElement, useEffect, useState } from 'react'
 import { useDocumentContext } from '../document/DocumentContext'
+import { useTranslation } from 'react-i18next'
+import cx from 'classnames'
 
-const BottomBar = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(true)
-  const { pdf, activePage, prevPage, nextPage, setPage } = useDocumentContext()
+// icons
+import { ReactComponent as Right } from '../../../assets/icons/chevron-right.svg'
+import { ReactComponent as Left } from '../../../assets/icons/chevron-left.svg'
+import { ReactComponent as Up } from '../../../assets/icons/chevron-up.svg'
+import { ReactComponent as Down } from '../../../assets/icons/chevron-down.svg'
+import Preview from './Preview'
+
+interface IBottomBarProps {
+  pagePreviews: number
+}
+
+/**
+ * This method renders the bottom bar component
+ * used to navigate through the document
+ *
+ * @param pagePreviews - number of previews to be rendered
+ *
+ * @returns The bottom bar component
+ */
+const BottomBar = ({ pagePreviews }: IBottomBarProps) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const { activePage, prevPage, nextPage, totalPages } = useDocumentContext()
+  const { t } = useTranslation()
+
   const toggleDropdown = () => {
     setIsDropdownOpen((prevState) => !prevState)
   }
 
-  let pagePreviews = 7 //temp static value just for now.
-
   return (
-    <div className="flex flex-col items-center justify-center bg-blue-300 py-5 fixed bottom-0 left-0 w-full">
-      <div className="flex justify-between items-center w-full mb-4 px-10">
-        <div></div>
-
-        <button
-          className={`px-5 py-2 text-lg text-black bg-blue-200 rounded-md hover:bg-blue-500`}
-          onClick={toggleDropdown}
-        >
-          {/* {isDropdownOpen ? <FaAngleDown /> : <FaAngleUp />} */}
-        </button>
-        <div className="text-white">
-          <input
-            type="text"
-            value={activePage}
-            pattern="[0-9]*" //fix for only number input
-            onChange={setPage}
-            className="w-7 bg-gray-200 text-black rounded-md mr-2 pl-2"
-          ></input>
-          of {pdf?.numPages}
-        </div>
-      </div>
+    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-800 gap-2 py-1 rounded-xl shadow-lg justify-center items-center grid grid-cols-1 duration-200 z-10">
+      <button
+        className="bg-transparent border-none hover:bg-gray-50 dark:hover:bg-gray-900 rounded cursor-pointer duration-200 items-center justify-self-center h-6 w-8"
+        onClick={toggleDropdown}
+        title={t('previewToggle')}
+      >
+        {isDropdownOpen ? (
+          <Down className="duration-200 stroke-gray-500 dark:stroke-gray-300"></Down>
+        ) : (
+          <Up className="duration-200 stroke-gray-500 dark:stroke-gray-300"></Up>
+        )}
+      </button>
       {isDropdownOpen && (
-        <div className="flex items-center justify-center bg-blue-200 p-3 rounded-lg">
+        <div className="flex items-center justify-center bg-white dark:bg-gray-800 p-3 rounded-lg gap-10">
           <button
+            title={t('prevPage')}
             className={
-              'px-5 py-2 text-lg text-black bg-blue-200 rounded-md hover:bg-blue-500'
+              'bg-transparent border-none hover:bg-gray-50 dark:hover:bg-gray-900 rounded cursor-pointer duration-200 flex items-center'
             }
             onClick={prevPage}
           >
-            {/* <FaAngleLeft /> */}
+            <Left
+              className={cx('duration-200', {
+                'stroke-gray-500 dark:stroke-gray-300': activePage !== 1,
+                'stroke-gray-300 dark:stroke-gray-500': activePage === 1,
+              })}
+            />
           </button>
           {Array.from({ length: pagePreviews }).map((_, index) => (
-            <div key={index} className="h-20 w-12 bg-white mr-3 ml-3"></div>
+            <Preview
+              pageNumber={
+                activePage - Math.floor((pagePreviews + 1) / 2) + index + 1
+              }
+              previewNumber={index + 1}
+              key={index}
+            />
           ))}
           <button
+            title={t('nextPage')}
             className={
-              'px-5 py-2 text-lg text-black bg-blue-200 rounded-md hover:bg-blue-500'
+              'bg-transparent border-none hover:bg-gray-50 dark:hover:bg-gray-900 rounded cursor-pointer duration-200 flex items-center'
             }
             onClick={nextPage}
           >
-            {/* <FaAngleRight /> */}
+            <Right
+              className={cx('duration-200', {
+                'stroke-gray-300 dark:stroke-gray-500':
+                  activePage === totalPages,
+                'stroke-gray-500 dark:stroke-gray-300':
+                  activePage !== totalPages,
+              })}
+            />
           </button>
         </div>
       )}
