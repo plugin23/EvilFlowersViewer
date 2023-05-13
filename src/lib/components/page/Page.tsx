@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useDocumentContext } from '../document/DocumentContext'
 import PageContext from './PageContext'
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
+import * as pdfjsViewer from 'pdfjs-dist/legacy/web/pdf_viewer'
 import { RENDERING_STATES } from '../../../utils/enums'
 
 /**
@@ -45,6 +46,18 @@ const Page = () => {
             container,
             viewport,
             textDivs: [],
+          })
+        })
+
+        page.getAnnotations().then((annotations) => {
+          pdfjs.AnnotationLayer.render({
+            annotations,
+            div: annotationContainer,
+            viewport,
+            page,
+            linkService: new pdfjsViewer.PDFLinkService(),
+            downloadManager: new pdfjsViewer.DownloadManager(),
+            renderForms: false,
           })
         })
 
